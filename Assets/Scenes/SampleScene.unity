@@ -163,13 +163,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 327e2b06ffaab274fb162b59a60b064d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _boardWidth: 8
-  _boardHeight: 8
-  _runMoveOnStart: 1
-  _fromColumn: 0
-  _fromRow: 0
-  _toColumn: 1
-  _toRow: 0
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
@@ -507,6 +500,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7cdc67104e03a894c95a6631f62fec46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _levelConfig: {fileID: 11400000, guid: daeba1385c4a3e3428c255679df190cf, type: 2}
 --- !u!114 &1073469424
 MonoBehaviour:
   m_ObjectHideFlags: 0

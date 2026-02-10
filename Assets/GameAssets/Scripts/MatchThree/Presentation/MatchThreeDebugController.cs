@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Cysharp.Threading.Tasks;
 using MatchThree.Application;
 using MatchThree.Application.Events;
 using MatchThree.Domain;
@@ -12,30 +11,11 @@ namespace MatchThree.Presentation
 {
     public class MatchThreeDebugController : MonoBehaviour
     {
-        [SerializeField]
-        private int _boardWidth = 8;
-
-        [SerializeField]
-        private int _boardHeight = 8;
-
-        [SerializeField]
-        private bool _runMoveOnStart = true;
-
-        [SerializeField]
-        private int _fromColumn;
-
-        [SerializeField]
-        private int _fromRow;
-
-        [SerializeField]
-        private int _toColumn = 1;
-
-        [SerializeField]
-        private int _toRow;
-
         private BoardInitializer _boardInitializer;
 
         private MoveProcessor _moveProcessor;
+
+        private MatchThreeGameSettingsModel _settingsModel;
 
         private BoardModel _boardModel;
 
@@ -55,6 +35,7 @@ namespace MatchThree.Presentation
         private void Construct(
             BoardInitializer boardInitializer,
             MoveProcessor moveProcessor,
+            MatchThreeGameSettingsModel settingsModel,
             ISubscriber<MoveStartedEventModel> moveStartedEventSubscriber,
             ISubscriber<MoveRejectedEventModel> moveRejectedEventSubscriber,
             ISubscriber<MoveAppliedEventModel> moveAppliedEventSubscriber,
@@ -63,6 +44,7 @@ namespace MatchThree.Presentation
         {
             _boardInitializer = boardInitializer;
             _moveProcessor = moveProcessor;
+            _settingsModel = settingsModel;
             _moveStartedEventSubscriber = moveStartedEventSubscriber;
             _moveRejectedEventSubscriber = moveRejectedEventSubscriber;
             _moveAppliedEventSubscriber = moveAppliedEventSubscriber;
@@ -74,17 +56,17 @@ namespace MatchThree.Presentation
         private void Start()
         {
             SubscribeToEvents();
-            _boardModel = _boardInitializer.CreateBoard(_boardWidth, _boardHeight);
+            _boardModel = _boardInitializer.CreateBoard(_settingsModel.BoardWidth, _settingsModel.BoardHeight);
 
-            if (!_runMoveOnStart)
+            if (!_settingsModel.RunMoveOnStart)
             {
                 Debug.Log("MatchThree board is initialized.");
 
                 return;
             }
 
-            BoardCoordinate fromCoordinate = new BoardCoordinate(_fromColumn, _fromRow);
-            BoardCoordinate toCoordinate = new BoardCoordinate(_toColumn, _toRow);
+            BoardCoordinate fromCoordinate = new BoardCoordinate(_settingsModel.FromColumn, _settingsModel.FromRow);
+            BoardCoordinate toCoordinate = new BoardCoordinate(_settingsModel.ToColumn, _settingsModel.ToRow);
             MoveModel moveModel = new MoveModel(fromCoordinate, toCoordinate);
             _moveProcessor.Process(_boardModel, moveModel);
         }

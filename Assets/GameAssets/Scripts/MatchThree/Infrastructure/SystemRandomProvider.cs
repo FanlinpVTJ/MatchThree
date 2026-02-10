@@ -1,4 +1,5 @@
 using System;
+using MatchThree.Application;
 using MatchThree.Domain.Contracts;
 
 namespace MatchThree.Infrastructure
@@ -7,9 +8,16 @@ namespace MatchThree.Infrastructure
     {
         private readonly Random _random;
 
-        public SystemRandomProvider()
+        public SystemRandomProvider(MatchThreeGameSettingsModel settingsModel)
         {
-            _random = new Random();
+            if (settingsModel.UseDeterministicSeed)
+            {
+                _random = new Random(settingsModel.DeterministicSeed);
+            }
+            else
+            {
+                _random = new Random();
+            }
         }
 
         public int Range(int minInclusive, int maxExclusive)

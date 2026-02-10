@@ -60,6 +60,20 @@ namespace MatchThree.Domain
             cell.ClearTile();
         }
 
+        public void SwapTiles(BoardCoordinate firstCoordinate, BoardCoordinate secondCoordinate)
+        {
+            EnsureCoordinateInBounds(firstCoordinate);
+            EnsureCoordinateInBounds(secondCoordinate);
+
+            CellModel firstCell = _cells[firstCoordinate.Column, firstCoordinate.Row];
+            CellModel secondCell = _cells[secondCoordinate.Column, secondCoordinate.Row];
+            TileModel firstTile = firstCell.Tile;
+            TileModel secondTile = secondCell.Tile;
+
+            firstCell.SetTile(secondTile);
+            secondCell.SetTile(firstTile);
+        }
+
         private void InitializeCells()
         {
             for (int row = 0; row < Height; row++)

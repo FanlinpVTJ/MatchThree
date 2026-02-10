@@ -15,6 +15,7 @@ namespace MatchThree.Installers
             Container.Bind<IMoveValidator>().To<AdjacentMoveValidator>().AsSingle();
             Container.Bind<IMatchRule>().To<LineMatchRule>().AsSingle();
             Container.Bind<BoardInitializer>().AsSingle();
+            Container.Bind<CascadeProcessor>().AsSingle();
             Container.Bind<MoveProcessor>().AsSingle();
         }
     }

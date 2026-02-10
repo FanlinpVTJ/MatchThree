@@ -8,12 +8,12 @@ namespace MatchThree.Application
     {
         private readonly IMoveValidator _moveValidator;
 
-        private readonly IMatchRule _matchRule;
+        private readonly CascadeProcessor _cascadeProcessor;
 
-        public MoveProcessor(IMoveValidator moveValidator, IMatchRule matchRule)
+        public MoveProcessor(IMoveValidator moveValidator, CascadeProcessor cascadeProcessor)
         {
             _moveValidator = moveValidator;
-            _matchRule = matchRule;
+            _cascadeProcessor = cascadeProcessor;
         }
 
         public MoveProcessResultModel Process(BoardModel boardModel, MoveModel moveModel)
@@ -28,9 +28,9 @@ namespace MatchThree.Application
             }
 
             boardModel.SwapTiles(moveModel.FromCoordinate, moveModel.ToCoordinate);
-            List<MatchGroupModel> matchGroups = _matchRule.FindMatches(boardModel);
+            CascadeResolveResultModel cascadeResult = _cascadeProcessor.Resolve(boardModel);
 
-            if (matchGroups.Count == 0)
+            if (cascadeResult.MatchGroups.Count == 0)
             {
                 boardModel.SwapTiles(moveModel.FromCoordinate, moveModel.ToCoordinate);
 
@@ -39,6 +39,7 @@ namespace MatchThree.Application
                 return noMatchResult;
             }
 
+            List<MatchGroupModel> matchGroups = cascadeResult.MatchGroups;
             MoveProcessResultModel successResult = MoveProcessResultModel.Success(matchGroups);
 
             return successResult;

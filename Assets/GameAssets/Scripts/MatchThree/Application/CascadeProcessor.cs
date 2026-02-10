@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using MatchThree.Application.Events;
 using MatchThree.Domain;
 using MatchThree.Domain.Contracts;
+using MessagePipe;
 
 namespace MatchThree.Application
 {
@@ -10,10 +12,16 @@ namespace MatchThree.Application
 
         private readonly ITileGenerator _tileGenerator;
 
-        public CascadeProcessor(IMatchRule matchRule, ITileGenerator tileGenerator)
+        private readonly IPublisher<CascadeResolvedEventModel> _cascadeResolvedEventPublisher;
+
+        public CascadeProcessor(
+            IMatchRule matchRule,
+            ITileGenerator tileGenerator,
+            IPublisher<CascadeResolvedEventModel> cascadeResolvedEventPublisher)
         {
             _matchRule = matchRule;
             _tileGenerator = tileGenerator;
+            _cascadeResolvedEventPublisher = cascadeResolvedEventPublisher;
         }
 
         public CascadeResolveResultModel Resolve(BoardModel boardModel)
@@ -32,6 +40,8 @@ namespace MatchThree.Application
 
                 cascadeCount++;
                 allMatchGroups.AddRange(currentMatchGroups);
+                CascadeResolvedEventModel cascadeEventModel = new CascadeResolvedEventModel(cascadeCount, currentMatchGroups.Count);
+                _cascadeResolvedEventPublisher.Publish(cascadeEventModel);
 
                 RemoveMatchedTiles(boardModel, currentMatchGroups);
                 CollapseTiles(boardModel);

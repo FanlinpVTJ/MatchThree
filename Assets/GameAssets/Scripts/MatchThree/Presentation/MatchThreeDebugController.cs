@@ -11,13 +11,7 @@ namespace MatchThree.Presentation
 {
     public class MatchThreeDebugController : MonoBehaviour
     {
-        private BoardInitializer _boardInitializer;
-
-        private MoveProcessor _moveProcessor;
-
-        private MatchThreeGameSettingsModel _settingsModel;
-
-        private BoardModel _boardModel;
+        private MatchThreeGameService _gameService;
 
         private ISubscriber<MoveStartedEventModel> _moveStartedEventSubscriber;
 
@@ -29,46 +23,39 @@ namespace MatchThree.Presentation
 
         private ISubscriber<BoardSettledEventModel> _boardSettledEventSubscriber;
 
+        private ISubscriber<GameProgressChangedEventModel> _gameProgressChangedEventSubscriber;
+
+        private ISubscriber<GameFinishedEventModel> _gameFinishedEventSubscriber;
+
         private List<IDisposable> _subscriptions;
 
         [Inject]
         private void Construct(
-            BoardInitializer boardInitializer,
-            MoveProcessor moveProcessor,
-            MatchThreeGameSettingsModel settingsModel,
+            MatchThreeGameService gameService,
             ISubscriber<MoveStartedEventModel> moveStartedEventSubscriber,
             ISubscriber<MoveRejectedEventModel> moveRejectedEventSubscriber,
             ISubscriber<MoveAppliedEventModel> moveAppliedEventSubscriber,
             ISubscriber<CascadeResolvedEventModel> cascadeResolvedEventSubscriber,
-            ISubscriber<BoardSettledEventModel> boardSettledEventSubscriber)
+            ISubscriber<BoardSettledEventModel> boardSettledEventSubscriber,
+            ISubscriber<GameProgressChangedEventModel> gameProgressChangedEventSubscriber,
+            ISubscriber<GameFinishedEventModel> gameFinishedEventSubscriber)
         {
-            _boardInitializer = boardInitializer;
-            _moveProcessor = moveProcessor;
-            _settingsModel = settingsModel;
+            _gameService = gameService;
             _moveStartedEventSubscriber = moveStartedEventSubscriber;
             _moveRejectedEventSubscriber = moveRejectedEventSubscriber;
             _moveAppliedEventSubscriber = moveAppliedEventSubscriber;
             _cascadeResolvedEventSubscriber = cascadeResolvedEventSubscriber;
             _boardSettledEventSubscriber = boardSettledEventSubscriber;
+            _gameProgressChangedEventSubscriber = gameProgressChangedEventSubscriber;
+            _gameFinishedEventSubscriber = gameFinishedEventSubscriber;
             _subscriptions = new List<IDisposable>();
         }
 
         private void Start()
         {
             SubscribeToEvents();
-            _boardModel = _boardInitializer.CreateBoard(_settingsModel.BoardWidth, _settingsModel.BoardHeight);
-
-            if (!_settingsModel.RunMoveOnStart)
-            {
-                Debug.Log("MatchThree board is initialized.");
-
-                return;
-            }
-
-            BoardCoordinate fromCoordinate = new BoardCoordinate(_settingsModel.FromColumn, _settingsModel.FromRow);
-            BoardCoordinate toCoordinate = new BoardCoordinate(_settingsModel.ToColumn, _settingsModel.ToRow);
-            MoveModel moveModel = new MoveModel(fromCoordinate, toCoordinate);
-            _moveProcessor.Process(_boardModel, moveModel);
+            _gameService.StartNewGame();
+            _gameService.TryProcessConfiguredStartMove();
         }
 
         private void OnDestroy()
@@ -96,6 +83,12 @@ namespace MatchThree.Presentation
 
             IDisposable boardSettledSubscription = _boardSettledEventSubscriber.Subscribe(HandleBoardSettled);
             _subscriptions.Add(boardSettledSubscription);
+
+            IDisposable gameProgressChangedSubscription = _gameProgressChangedEventSubscriber.Subscribe(HandleGameProgressChanged);
+            _subscriptions.Add(gameProgressChangedSubscription);
+
+            IDisposable gameFinishedSubscription = _gameFinishedEventSubscriber.Subscribe(HandleGameFinished);
+            _subscriptions.Add(gameFinishedSubscription);
         }
 
         private static void HandleMoveStarted(MoveStartedEventModel eventModel)
@@ -123,6 +116,17 @@ namespace MatchThree.Presentation
         private static void HandleBoardSettled(BoardSettledEventModel eventModel)
         {
             Debug.Log($"Board settled. Total groups: {eventModel.TotalMatchGroupCount}, Cascades: {eventModel.CascadeCount}");
+        }
+
+        private static void HandleGameProgressChanged(GameProgressChangedEventModel eventModel)
+        {
+            Debug.Log($"Progress changed. Moves used: {eventModel.MovesUsed}, Moves remaining: {eventModel.MovesRemaining}, Goal: {eventModel.TotalMatchGroupCount}/{eventModel.TargetMatchGroupCount}");
+        }
+
+        private static void HandleGameFinished(GameFinishedEventModel eventModel)
+        {
+            string result = eventModel.IsWin ? "Win" : "Lose";
+            Debug.Log($"Game finished. Result: {result}, Moves used: {eventModel.MovesUsed}, Goal: {eventModel.TotalMatchGroupCount}/{eventModel.TargetMatchGroupCount}");
         }
     }
 }

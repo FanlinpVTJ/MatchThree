@@ -36,6 +36,8 @@ namespace MatchThree.Configuration
                 levelConfig.UseDeterministicSeed,
                 levelConfig.DeterministicSeed,
                 availableColorTypes,
+                levelConfig.MoveLimit,
+                levelConfig.TargetMatchGroupCount,
                 blockedCells);
 
             return settingsModel;
@@ -91,6 +93,16 @@ namespace MatchThree.Configuration
             if (configuredColorTypes == null || configuredColorTypes.Length == 0)
             {
                 throw new InvalidOperationException("MatchThreeLevelConfig.AvailableColorTypes must contain at least one value.");
+            }
+
+            if (levelConfig.MoveLimit <= 0)
+            {
+                throw new InvalidOperationException("MoveLimit must be greater than zero.");
+            }
+
+            if (levelConfig.TargetMatchGroupCount <= 0)
+            {
+                throw new InvalidOperationException("TargetMatchGroupCount must be greater than zero.");
             }
 
             ValidateBlockedCells(levelConfig);

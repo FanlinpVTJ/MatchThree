@@ -17,6 +17,7 @@ namespace MatchThree.Installers
             Container.Bind<BoardInitializer>().AsSingle();
             Container.Bind<CascadeProcessor>().AsSingle();
             Container.Bind<MoveProcessor>().AsSingle();
+            Container.Bind<MatchThreeGameService>().AsSingle();
         }
     }
 }

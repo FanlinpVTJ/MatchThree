@@ -45,6 +45,12 @@ namespace MatchThree.Configuration
         };
 
         [SerializeField]
+        private int _moveLimit = 30;
+
+        [SerializeField]
+        private int _targetMatchGroupCount = 10;
+
+        [SerializeField]
         private BlockedCellConfigModel[] _blockedCells = new BlockedCellConfigModel[0];
 
         public int BoardWidth
@@ -124,6 +130,22 @@ namespace MatchThree.Configuration
             get
             {
                 return _availableColorTypes;
+            }
+        }
+
+        public int MoveLimit
+        {
+            get
+            {
+                return _moveLimit;
+            }
+        }
+
+        public int TargetMatchGroupCount
+        {
+            get
+            {
+                return _targetMatchGroupCount;
             }
         }
 

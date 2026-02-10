@@ -24,6 +24,10 @@ namespace MatchThree.Application
 
         public TileColorType[] AvailableColorTypes { get; }
 
+        public int MoveLimit { get; }
+
+        public int TargetMatchGroupCount { get; }
+
         public BlockedCellModel[] BlockedCells { get; }
 
         public MatchThreeGameSettingsModel(
@@ -37,6 +41,8 @@ namespace MatchThree.Application
             bool useDeterministicSeed,
             int deterministicSeed,
             TileColorType[] availableColorTypes,
+            int moveLimit,
+            int targetMatchGroupCount,
             BlockedCellModel[] blockedCells)
         {
             BoardWidth = boardWidth;
@@ -49,6 +55,8 @@ namespace MatchThree.Application
             UseDeterministicSeed = useDeterministicSeed;
             DeterministicSeed = deterministicSeed;
             AvailableColorTypes = availableColorTypes;
+            MoveLimit = moveLimit;
+            TargetMatchGroupCount = targetMatchGroupCount;
             BlockedCells = blockedCells;
         }
     }

@@ -14,6 +14,8 @@ namespace MatchThree.Installers
             Container.BindMessageBroker<MoveAppliedEventModel>(messagePipeOptions);
             Container.BindMessageBroker<CascadeResolvedEventModel>(messagePipeOptions);
             Container.BindMessageBroker<BoardSettledEventModel>(messagePipeOptions);
+            Container.BindMessageBroker<GameProgressChangedEventModel>(messagePipeOptions);
+            Container.BindMessageBroker<GameFinishedEventModel>(messagePipeOptions);
         }
     }
 }

@@ -60,14 +60,14 @@ namespace MatchThree.Domain
             cell.ClearTile();
         }
 
-        public void SetBlocked(BoardCoordinate coordinate, bool isBlocked)
+        public void SetBlocked(BoardCoordinate coordinate, CellBlockType blockType, int blockDurability)
         {
             EnsureCoordinateInBounds(coordinate);
 
             CellModel cell = _cells[coordinate.Column, coordinate.Row];
-            cell.SetBlocked(isBlocked);
+            cell.SetBlocked(blockType, blockDurability);
 
-            if (isBlocked)
+            if (blockType != CellBlockType.None)
             {
                 cell.ClearTile();
             }

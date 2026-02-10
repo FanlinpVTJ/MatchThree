@@ -43,7 +43,8 @@ namespace MatchThree.Application
                 CascadeResolvedEventModel cascadeEventModel = new CascadeResolvedEventModel(cascadeCount, currentMatchGroups.Count);
                 _cascadeResolvedEventPublisher.Publish(cascadeEventModel);
 
-                RemoveMatchedTiles(boardModel, currentMatchGroups);
+                HashSet<BoardCoordinate> removedCoordinates = RemoveMatchedTiles(boardModel, currentMatchGroups);
+                ApplyObstacleDamage(boardModel, removedCoordinates);
                 CollapseTiles(boardModel);
                 RefillTiles(boardModel);
             }
@@ -53,7 +54,7 @@ namespace MatchThree.Application
             return resultModel;
         }
 
-        private static void RemoveMatchedTiles(BoardModel boardModel, List<MatchGroupModel> matchGroups)
+        private static HashSet<BoardCoordinate> RemoveMatchedTiles(BoardModel boardModel, List<MatchGroupModel> matchGroups)
         {
             HashSet<BoardCoordinate> uniqueCoordinates = new HashSet<BoardCoordinate>();
 
@@ -70,6 +71,55 @@ namespace MatchThree.Application
                         boardModel.ClearTile(coordinate);
                     }
                 }
+            }
+
+            return uniqueCoordinates;
+        }
+
+        private static void ApplyObstacleDamage(BoardModel boardModel, HashSet<BoardCoordinate> removedCoordinates)
+        {
+            Dictionary<BoardCoordinate, int> damageByCoordinate = new Dictionary<BoardCoordinate, int>();
+
+            foreach (BoardCoordinate removedCoordinate in removedCoordinates)
+            {
+                AccumulateDamage(boardModel, removedCoordinate.Column - 1, removedCoordinate.Row, damageByCoordinate);
+                AccumulateDamage(boardModel, removedCoordinate.Column + 1, removedCoordinate.Row, damageByCoordinate);
+                AccumulateDamage(boardModel, removedCoordinate.Column, removedCoordinate.Row - 1, damageByCoordinate);
+                AccumulateDamage(boardModel, removedCoordinate.Column, removedCoordinate.Row + 1, damageByCoordinate);
+            }
+
+            foreach (KeyValuePair<BoardCoordinate, int> damagePair in damageByCoordinate)
+            {
+                BoardCoordinate coordinate = damagePair.Key;
+                int damage = damagePair.Value;
+                CellModel cell = boardModel.GetCell(coordinate);
+                cell.ApplyDamage(damage);
+            }
+        }
+
+        private static void AccumulateDamage(BoardModel boardModel, int column, int row, Dictionary<BoardCoordinate, int> damageByCoordinate)
+        {
+            BoardCoordinate coordinate = new BoardCoordinate(column, row);
+
+            if (!boardModel.IsCoordinateInBounds(coordinate))
+            {
+                return;
+            }
+
+            CellModel cell = boardModel.GetCell(coordinate);
+
+            if (!cell.CanReceiveDamage())
+            {
+                return;
+            }
+
+            if (damageByCoordinate.ContainsKey(coordinate))
+            {
+                damageByCoordinate[coordinate] = damageByCoordinate[coordinate] + 1;
+            }
+            else
+            {
+                damageByCoordinate.Add(coordinate, 1);
             }
         }
 

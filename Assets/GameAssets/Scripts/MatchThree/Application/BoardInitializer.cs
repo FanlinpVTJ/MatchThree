@@ -58,7 +58,7 @@ namespace MatchThree.Application
                 }
 
                 BoardCoordinate coordinate = new BoardCoordinate(blockedCellModel.Column, blockedCellModel.Row);
-                boardModel.SetBlocked(coordinate, true);
+                boardModel.SetBlocked(coordinate, blockedCellModel.BlockType, blockedCellModel.Durability);
             }
         }
     }

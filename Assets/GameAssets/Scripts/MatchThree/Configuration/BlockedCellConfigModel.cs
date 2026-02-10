@@ -15,6 +15,9 @@ namespace MatchThree.Configuration
         [SerializeField]
         private CellBlockType _blockType = CellBlockType.Solid;
 
+        [SerializeField]
+        private int _durability = 1;
+
         public int Column
         {
             get
@@ -36,6 +39,14 @@ namespace MatchThree.Configuration
             get
             {
                 return _blockType;
+            }
+        }
+
+        public int Durability
+        {
+            get
+            {
+                return _durability;
             }
         }
     }

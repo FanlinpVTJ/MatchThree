@@ -62,7 +62,8 @@ namespace MatchThree.Configuration
                 BlockedCellModel blockedCellModel = new BlockedCellModel(
                     blockedCellConfigModel.Column,
                     blockedCellConfigModel.Row,
-                    blockedCellConfigModel.BlockType);
+                    blockedCellConfigModel.BlockType,
+                    blockedCellConfigModel.Durability);
                 blockedCells.Add(blockedCellModel);
             }
 
@@ -126,6 +127,11 @@ namespace MatchThree.Configuration
                 if (blockedCellConfigModel.BlockType == CellBlockType.None)
                 {
                     continue;
+                }
+
+                if (blockedCellConfigModel.BlockType == CellBlockType.Durable && blockedCellConfigModel.Durability <= 0)
+                {
+                    throw new InvalidOperationException("Durable blocked cell must have durability greater than zero.");
                 }
 
                 if (!IsCoordinateInBounds(blockedCellConfigModel.Column, blockedCellConfigModel.Row, levelConfig))

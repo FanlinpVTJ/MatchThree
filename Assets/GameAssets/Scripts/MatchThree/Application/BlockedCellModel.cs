@@ -10,11 +10,14 @@ namespace MatchThree.Application
 
         public CellBlockType BlockType { get; }
 
-        public BlockedCellModel(int column, int row, CellBlockType blockType)
+        public int Durability { get; }
+
+        public BlockedCellModel(int column, int row, CellBlockType blockType, int durability)
         {
             Column = column;
             Row = row;
             BlockType = blockType;
+            Durability = durability;
         }
     }
 }

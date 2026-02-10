@@ -22,3 +22,16 @@ MonoBehaviour:
   _useDeterministicSeed: 0
   _deterministicSeed: 0
   _availableColorTypes: 010000000200000003000000040000000500000006000000
+  _blockedCells:
+  - _column: 0
+    _row: 0
+    _blockType: 1
+  - _column: 7
+    _row: 7
+    _blockType: 1
+  - _column: 7
+    _row: 0
+    _blockType: 1
+  - _column: 0
+    _row: 7
+    _blockType: 1

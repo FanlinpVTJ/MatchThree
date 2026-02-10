@@ -44,6 +44,9 @@ namespace MatchThree.Configuration
             TileColorType.Orange
         };
 
+        [SerializeField]
+        private BlockedCellConfigModel[] _blockedCells = new BlockedCellConfigModel[0];
+
         public int BoardWidth
         {
             get
@@ -121,6 +124,14 @@ namespace MatchThree.Configuration
             get
             {
                 return _availableColorTypes;
+            }
+        }
+
+        public BlockedCellConfigModel[] BlockedCells
+        {
+            get
+            {
+                return _blockedCells;
             }
         }
     }

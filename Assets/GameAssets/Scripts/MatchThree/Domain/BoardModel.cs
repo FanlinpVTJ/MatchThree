@@ -60,6 +60,19 @@ namespace MatchThree.Domain
             cell.ClearTile();
         }
 
+        public void SetBlocked(BoardCoordinate coordinate, bool isBlocked)
+        {
+            EnsureCoordinateInBounds(coordinate);
+
+            CellModel cell = _cells[coordinate.Column, coordinate.Row];
+            cell.SetBlocked(isBlocked);
+
+            if (isBlocked)
+            {
+                cell.ClearTile();
+            }
+        }
+
         public void SwapTiles(BoardCoordinate firstCoordinate, BoardCoordinate secondCoordinate)
         {
             EnsureCoordinateInBounds(firstCoordinate);

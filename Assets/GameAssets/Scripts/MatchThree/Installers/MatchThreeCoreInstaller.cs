@@ -14,7 +14,9 @@ namespace MatchThree.Installers
             Container.Bind<ITileGenerator>().To<UniformTileGenerator>().AsSingle();
             Container.Bind<IMoveValidator>().To<AdjacentMoveValidator>().AsSingle();
             Container.Bind<IMatchRule>().To<LineMatchRule>().AsSingle();
+            Container.Bind<IPossibleMoveFinder>().To<PossibleMoveFinder>().AsSingle();
             Container.Bind<BoardInitializer>().AsSingle();
+            Container.Bind<BoardReshuffler>().AsSingle();
             Container.Bind<CascadeProcessor>().AsSingle();
             Container.Bind<MoveProcessor>().AsSingle();
             Container.Bind<MatchThreeGameService>().AsSingle();

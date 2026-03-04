@@ -10,11 +10,15 @@ namespace MatchThree.Application
 
         private readonly MoveProcessor _moveProcessor;
 
+        private readonly BoardReshuffler _boardReshuffler;
+
         private readonly MatchThreeGameSettingsModel _settingsModel;
 
         private readonly IPublisher<GameProgressChangedEventModel> _gameProgressChangedEventPublisher;
 
         private readonly IPublisher<GameFinishedEventModel> _gameFinishedEventPublisher;
+
+        private readonly IPublisher<BoardReshuffledEventModel> _boardReshuffledEventPublisher;
 
         private BoardModel _boardModel;
 
@@ -27,15 +31,19 @@ namespace MatchThree.Application
         public MatchThreeGameService(
             BoardInitializer boardInitializer,
             MoveProcessor moveProcessor,
+            BoardReshuffler boardReshuffler,
             MatchThreeGameSettingsModel settingsModel,
             IPublisher<GameProgressChangedEventModel> gameProgressChangedEventPublisher,
-            IPublisher<GameFinishedEventModel> gameFinishedEventPublisher)
+            IPublisher<GameFinishedEventModel> gameFinishedEventPublisher,
+            IPublisher<BoardReshuffledEventModel> boardReshuffledEventPublisher)
         {
             _boardInitializer = boardInitializer;
             _moveProcessor = moveProcessor;
+            _boardReshuffler = boardReshuffler;
             _settingsModel = settingsModel;
             _gameProgressChangedEventPublisher = gameProgressChangedEventPublisher;
             _gameFinishedEventPublisher = gameFinishedEventPublisher;
+            _boardReshuffledEventPublisher = boardReshuffledEventPublisher;
         }
 
         public void StartNewGame()
@@ -44,6 +52,7 @@ namespace MatchThree.Application
             _movesUsed = 0;
             _totalMatchGroupCount = 0;
             _isFinished = false;
+            EnsureBoardPlayable();
 
             PublishProgressChangedEvent();
         }
@@ -91,8 +100,25 @@ namespace MatchThree.Application
                 _isFinished = true;
                 PublishFinishedEvent(false);
             }
+            else
+            {
+                EnsureBoardPlayable();
+            }
 
             return resultModel;
+        }
+
+        private void EnsureBoardPlayable()
+        {
+            int reshuffleAttemptCount = _boardReshuffler.EnsurePlayable(_boardModel);
+
+            if (reshuffleAttemptCount <= 0)
+            {
+                return;
+            }
+
+            BoardReshuffledEventModel eventModel = new BoardReshuffledEventModel(reshuffleAttemptCount);
+            _boardReshuffledEventPublisher.Publish(eventModel);
         }
 
         private void PublishProgressChangedEvent()

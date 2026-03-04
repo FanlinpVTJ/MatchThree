@@ -14,14 +14,22 @@ namespace MatchThree.Application
 
         private readonly IPublisher<CascadeResolvedEventModel> _cascadeResolvedEventPublisher;
 
+        private readonly IPublisher<ObstacleDamagedEventModel> _obstacleDamagedEventPublisher;
+
+        private readonly IPublisher<ObstacleDestroyedEventModel> _obstacleDestroyedEventPublisher;
+
         public CascadeProcessor(
             IMatchRule matchRule,
             ITileGenerator tileGenerator,
-            IPublisher<CascadeResolvedEventModel> cascadeResolvedEventPublisher)
+            IPublisher<CascadeResolvedEventModel> cascadeResolvedEventPublisher,
+            IPublisher<ObstacleDamagedEventModel> obstacleDamagedEventPublisher,
+            IPublisher<ObstacleDestroyedEventModel> obstacleDestroyedEventPublisher)
         {
             _matchRule = matchRule;
             _tileGenerator = tileGenerator;
             _cascadeResolvedEventPublisher = cascadeResolvedEventPublisher;
+            _obstacleDamagedEventPublisher = obstacleDamagedEventPublisher;
+            _obstacleDestroyedEventPublisher = obstacleDestroyedEventPublisher;
         }
 
         public CascadeResolveResultModel Resolve(BoardModel boardModel)
@@ -76,7 +84,7 @@ namespace MatchThree.Application
             return uniqueCoordinates;
         }
 
-        private static void ApplyObstacleDamage(BoardModel boardModel, HashSet<BoardCoordinate> removedCoordinates)
+        private void ApplyObstacleDamage(BoardModel boardModel, HashSet<BoardCoordinate> removedCoordinates)
         {
             Dictionary<BoardCoordinate, int> damageByCoordinate = new Dictionary<BoardCoordinate, int>();
 
@@ -93,7 +101,24 @@ namespace MatchThree.Application
                 BoardCoordinate coordinate = damagePair.Key;
                 int damage = damagePair.Value;
                 CellModel cell = boardModel.GetCell(coordinate);
-                cell.ApplyDamage(damage);
+                int durabilityBeforeDamage = cell.BlockDurability;
+                bool isDestroyed = cell.ApplyDamage(damage);
+
+                if (isDestroyed)
+                {
+                    ObstacleDestroyedEventModel destroyedEventModel = new ObstacleDestroyedEventModel(coordinate);
+                    _obstacleDestroyedEventPublisher.Publish(destroyedEventModel);
+
+                    continue;
+                }
+
+                int durabilityAfterDamage = cell.BlockDurability;
+
+                if (durabilityAfterDamage < durabilityBeforeDamage)
+                {
+                    ObstacleDamagedEventModel damagedEventModel = new ObstacleDamagedEventModel(coordinate, damage, durabilityAfterDamage);
+                    _obstacleDamagedEventPublisher.Publish(damagedEventModel);
+                }
             }
         }
 

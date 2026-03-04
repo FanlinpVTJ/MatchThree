@@ -27,6 +27,12 @@ namespace MatchThree.Presentation
 
         private ISubscriber<GameFinishedEventModel> _gameFinishedEventSubscriber;
 
+        private ISubscriber<BoardReshuffledEventModel> _boardReshuffledEventSubscriber;
+
+        private ISubscriber<ObstacleDamagedEventModel> _obstacleDamagedEventSubscriber;
+
+        private ISubscriber<ObstacleDestroyedEventModel> _obstacleDestroyedEventSubscriber;
+
         private List<IDisposable> _subscriptions;
 
         [Inject]
@@ -38,7 +44,10 @@ namespace MatchThree.Presentation
             ISubscriber<CascadeResolvedEventModel> cascadeResolvedEventSubscriber,
             ISubscriber<BoardSettledEventModel> boardSettledEventSubscriber,
             ISubscriber<GameProgressChangedEventModel> gameProgressChangedEventSubscriber,
-            ISubscriber<GameFinishedEventModel> gameFinishedEventSubscriber)
+            ISubscriber<GameFinishedEventModel> gameFinishedEventSubscriber,
+            ISubscriber<BoardReshuffledEventModel> boardReshuffledEventSubscriber,
+            ISubscriber<ObstacleDamagedEventModel> obstacleDamagedEventSubscriber,
+            ISubscriber<ObstacleDestroyedEventModel> obstacleDestroyedEventSubscriber)
         {
             _gameService = gameService;
             _moveStartedEventSubscriber = moveStartedEventSubscriber;
@@ -48,6 +57,9 @@ namespace MatchThree.Presentation
             _boardSettledEventSubscriber = boardSettledEventSubscriber;
             _gameProgressChangedEventSubscriber = gameProgressChangedEventSubscriber;
             _gameFinishedEventSubscriber = gameFinishedEventSubscriber;
+            _boardReshuffledEventSubscriber = boardReshuffledEventSubscriber;
+            _obstacleDamagedEventSubscriber = obstacleDamagedEventSubscriber;
+            _obstacleDestroyedEventSubscriber = obstacleDestroyedEventSubscriber;
             _subscriptions = new List<IDisposable>();
         }
 
@@ -89,6 +101,15 @@ namespace MatchThree.Presentation
 
             IDisposable gameFinishedSubscription = _gameFinishedEventSubscriber.Subscribe(HandleGameFinished);
             _subscriptions.Add(gameFinishedSubscription);
+
+            IDisposable boardReshuffledSubscription = _boardReshuffledEventSubscriber.Subscribe(HandleBoardReshuffled);
+            _subscriptions.Add(boardReshuffledSubscription);
+
+            IDisposable obstacleDamagedSubscription = _obstacleDamagedEventSubscriber.Subscribe(HandleObstacleDamaged);
+            _subscriptions.Add(obstacleDamagedSubscription);
+
+            IDisposable obstacleDestroyedSubscription = _obstacleDestroyedEventSubscriber.Subscribe(HandleObstacleDestroyed);
+            _subscriptions.Add(obstacleDestroyedSubscription);
         }
 
         private static void HandleMoveStarted(MoveStartedEventModel eventModel)
@@ -127,6 +148,23 @@ namespace MatchThree.Presentation
         {
             string result = eventModel.IsWin ? "Win" : "Lose";
             Debug.Log($"Game finished. Result: {result}, Moves used: {eventModel.MovesUsed}, Goal: {eventModel.TotalMatchGroupCount}/{eventModel.TargetMatchGroupCount}");
+        }
+
+        private static void HandleBoardReshuffled(BoardReshuffledEventModel eventModel)
+        {
+            Debug.Log($"Board reshuffled. Attempts: {eventModel.ReshuffleAttemptCount}");
+        }
+
+        private static void HandleObstacleDamaged(ObstacleDamagedEventModel eventModel)
+        {
+            BoardCoordinate coordinate = eventModel.Coordinate;
+            Debug.Log($"Obstacle damaged at ({coordinate.Column}, {coordinate.Row}). Damage: {eventModel.DamageAmount}, Remaining durability: {eventModel.RemainingDurability}");
+        }
+
+        private static void HandleObstacleDestroyed(ObstacleDestroyedEventModel eventModel)
+        {
+            BoardCoordinate coordinate = eventModel.Coordinate;
+            Debug.Log($"Obstacle destroyed at ({coordinate.Column}, {coordinate.Row}).");
         }
     }
 }

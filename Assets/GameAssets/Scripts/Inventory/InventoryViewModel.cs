@@ -54,7 +54,7 @@ public class InventoryViewModel : IDisposable
             .AddTo(_disposables);
 
         SelectedTitle = _selectedItem
-            .Select(item => item != null ? "nothing to select" : item.Title.Value)
+            .Select(item => item == null ? "nothing to select" : item.Title.Value)
             .ToReadOnlyReactiveProperty()
             .AddTo(_disposables);
 

@@ -10,28 +10,35 @@ namespace MatchThree.Application.Services
     public class Match3GameSessionService : IMatch3GameSessionService
     {
         private readonly IBoardInitializationService _boardInitializationService;
+        private readonly IBoardSwapService _boardSwapService;
+        private readonly IMatchResolutionService _matchResolutionService;
         private readonly ISwapValidationRule _swapValidationRule;
         private readonly IMatchDetectionRule _matchDetectionRule;
-        private readonly ReactiveProperty<BoardModel> _boardModelProperty;
+        private readonly Subject<BoardModel> _boardModelSubject;
         private readonly ReactiveProperty<GamePhaseType> _gamePhaseTypeProperty;
         private readonly Subject<SwapValidationResultModel> _swapValidationResultModelSubject;
+        private BoardModel _currentBoardModel;
 
         public Match3GameSessionService(
             IBoardInitializationService boardInitializationService,
+            IBoardSwapService boardSwapService,
+            IMatchResolutionService matchResolutionService,
             ISwapValidationRule swapValidationRule,
             IMatchDetectionRule matchDetectionRule)
         {
             _boardInitializationService = boardInitializationService;
+            _boardSwapService = boardSwapService;
+            _matchResolutionService = matchResolutionService;
             _swapValidationRule = swapValidationRule;
             _matchDetectionRule = matchDetectionRule;
-            _boardModelProperty = new ReactiveProperty<BoardModel>(null);
+            _boardModelSubject = new Subject<BoardModel>();
             _gamePhaseTypeProperty = new ReactiveProperty<GamePhaseType>(GamePhaseType.None);
             _swapValidationResultModelSubject = new Subject<SwapValidationResultModel>();
         }
 
         public Observable<BoardModel> ObserveBoardModel()
         {
-            return _boardModelProperty;
+            return _boardModelSubject;
         }
 
         public Observable<GamePhaseType> ObserveGamePhaseType()
@@ -46,7 +53,7 @@ namespace MatchThree.Application.Services
 
         public BoardModel GetCurrentBoardModel()
         {
-            return _boardModelProperty.Value;
+            return _currentBoardModel;
         }
 
         public GamePhaseType GetCurrentGamePhaseType()
@@ -60,13 +67,14 @@ namespace MatchThree.Application.Services
 
             BoardModel boardModel = _boardInitializationService.CreateBoardModel(widthValue, heightValue, pieceTypeCountValue);
 
-            _boardModelProperty.Value = boardModel;
+            _currentBoardModel = boardModel;
+            _boardModelSubject.OnNext(_currentBoardModel);
             _gamePhaseTypeProperty.Value = GamePhaseType.Input;
         }
 
         public void TrySwap(SwapCommandModel swapCommandModel)
         {
-            BoardModel boardModel = _boardModelProperty.Value;
+            BoardModel boardModel = _currentBoardModel;
             SwapValidationResultModel swapValidationResultModel = _swapValidationRule.Validate(boardModel, swapCommandModel);
 
             _swapValidationResultModelSubject.OnNext(swapValidationResultModel);
@@ -78,14 +86,20 @@ namespace MatchThree.Application.Services
 
             _gamePhaseTypeProperty.Value = GamePhaseType.Resolving;
 
-            List<MatchGroupModel> matchGroupModels = _matchDetectionRule.FindMatchGroupModels(boardModel);
+            BoardModel swappedBoardModel = _boardSwapService.CreateSwappedBoardModel(boardModel, swapCommandModel);
+            List<MatchGroupModel> matchGroupModels = _matchDetectionRule.FindMatchGroupModels(swappedBoardModel);
 
             if (matchGroupModels.Count == 0)
             {
+                SwapValidationResultModel failedSwapValidationResultModel = new SwapValidationResultModel(false, "Swap should produce a match.");
+                _swapValidationResultModelSubject.OnNext(failedSwapValidationResultModel);
                 _gamePhaseTypeProperty.Value = GamePhaseType.Input;
                 return;
             }
 
+            BoardModel resolvedBoardModel = _matchResolutionService.CreateResolvedBoardModel(swappedBoardModel, matchGroupModels);
+            _currentBoardModel = resolvedBoardModel;
+            _boardModelSubject.OnNext(_currentBoardModel);
             _gamePhaseTypeProperty.Value = GamePhaseType.Input;
         }
     }

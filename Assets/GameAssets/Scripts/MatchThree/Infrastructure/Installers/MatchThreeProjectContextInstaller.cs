@@ -1,6 +1,7 @@
 using MatchThree.Domain.Interfaces;
 using MatchThree.Domain.Rules;
 using MatchThree.Infrastructure.Factories;
+using MatchThree.Application.Services;
 using Zenject;
 
 namespace MatchThree.Infrastructure.Installers
@@ -16,11 +17,14 @@ namespace MatchThree.Infrastructure.Installers
             Container.Bind<IBoardModelFactory>().To<BoardModelFactory>().AsSingle();
             Container.Bind<ICellModelFactory>().To<CellModelFactory>().AsSingle();
             Container.Bind<IPieceModelFactory>().To<PieceModelFactory>().AsSingle();
+            Container.Bind<IBoardSwapService>().To<BoardSwapService>().AsSingle();
+            Container.Bind<IMatchResolutionService>().To<MatchResolutionService>().AsSingle();
 
             Container.Bind<GameSessionViewModelFactory>().AsSingle();
             Container.Bind<BoardViewModelFactory>().AsSingle();
             Container.Bind<CellViewModelFactory>().AsSingle();
             Container.Bind<PieceViewModelFactory>().AsSingle();
+            Container.Bind<CellViewFactory>().AsSingle();
         }
     }
 }
